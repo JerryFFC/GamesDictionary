@@ -45,7 +45,7 @@ if uploadedGamesDictJson is not None:
         st.download_button(
             label="Download data as CSV",
             data=df,
-            file_name='GamesFictionary.csv',
+            file_name='GamesDictionary.csv',
             mime='text/csv',
             on_click=on_click_callback
         )
@@ -63,6 +63,8 @@ else:
     st.write("Please upload a file.")
 
 
+# with open(r'C:\Users\jerry\OneDrive\Desktop\codeWork\GamesDictionary\2024GamesReleases.json', 'r', encoding='utf-8') as gamesJson:
+#     GamesDictionary = json.load(gamesJson)
 
 
-
+# transformJson(GamesDictionary)

@@ -104,7 +104,7 @@ def reshape_company_data(df, column_name):
 
 # Usage example:
 # Assuming 'df' is your DataFrame and 'involved_companies' is the column of interest
-#df = reshape_company_data(df, 'involved_companies')
+df = reshape_company_data(df, 'involved_companies')
 #print(df)
 #df.to_excel(r'C:\Users\jerry\OneDrive\Desktop\codeWork\GamesDictionary\sampleOutputFlattened.xlsx', index=False)
 
@@ -180,8 +180,37 @@ print(df.columns)
 df = process_platforms(df, 'platforms')
 print(df.head())
 
-import pandas as pd
+# import pandas as pd
+# from itertools import product
+
+# def expand_df(df):
+#     # Create a list to collect new rows
+#     new_rows = []
+
+#     for _, row in df.iterrows():
+#         # Split the concatenated company names and platform names
+#         companies = row['concatenated_company_names'].split(", ") if row['concatenated_company_names'] else [""]
+#         platforms = row['concatenated_platform_names'].split(", ") if row['concatenated_platform_names'] else [""]
+
+#         # Create all combinations of companies and platforms
+#         combinations = list(product(companies, platforms))
+
+#         for company, platform in combinations:
+#             # Create a new row for each combination
+#             new_row = row.copy()
+#             new_row['concatenated_company_names'] = company
+#             new_row['concatenated_platform_names'] = platform
+#             # Add the new row to the list
+#             new_rows.append(new_row)
+
+#     # Create a new DataFrame from the list of new rows
+#     expanded_df = pd.DataFrame(new_rows)
+
+#     return expanded_df
+
+
 from itertools import product
+import pandas as pd
 
 def expand_df(df):
     # Create a list to collect new rows
@@ -198,19 +227,37 @@ def expand_df(df):
         for company, platform in combinations:
             # Create a new row for each combination
             new_row = row.copy()
-            new_row['concatenated_company_names'] = company
-            new_row['concatenated_platform_names'] = platform
+            new_row['company'] = company  # Individual company name
+            new_row['platform'] = platform  # Individual platform name
+            # Retain the original comma-separated lists
+            new_row['original_concatenated_company_names'] = row['concatenated_company_names']
+            new_row['original_concatenated_platform_names'] = row['concatenated_platform_names']
             # Add the new row to the list
             new_rows.append(new_row)
 
     # Create a new DataFrame from the list of new rows
     expanded_df = pd.DataFrame(new_rows)
-
+    expanded_df=expanded_df.drop(['original_concatenated_company_names','original_concatenated_platform_names', 'company_id_1','company_name_1','company_id_2','company_name_2','company_id_3','company_name_3','company_id_4','company_name_4','company_id_5','company_name_5','company_id_6','company_name_6'], axis = 1)
+    expanded_df=expanded_df.rename(columns={'first_release_date' : 'Release Date', 'name lower':'Game names (lower)', 'name':'Game name', 'concatenated_company_names':'Company conc.', 'company_count' : 'Company count', 'concatenated_platform_names': 'Platforms conc.', 'company':'Company ind.'
+                                , 'platform':'Platform ind.', 'platform_count':'Platform count'})
+    def renameCountWithString(currentText, text):
+        newText = str(text) + ' ' + str(currentText)
+        return newText
+    
+    expanded_df['Platform count'] = expanded_df['Platform count'].apply(lambda x: renameCountWithString(x, 'All Platforms.'))
+    expanded_df['Company count'] = expanded_df['Company count'].apply(lambda x: renameCountWithString(x, 'Involved Companies.'))
+    def replace_pc_text(column_name, df = expanded_df):
+        # Replace 'PC (Microsoft Windows)' with 'PC' in the specified column
+        df[column_name] = df[column_name].str.replace('PC \(Microsoft Windows\)', 'PC', regex=True)
+        return df
+    print(expanded_df.columns)
+    expanded_df= replace_pc_text('Platforms conc.')
+    expanded_df =replace_pc_text('Platform ind.')
     return expanded_df
+
 
 df = expand_df(df)    
 print(len(df))
-print(df[df['name'] == "Top Racer Collection"])
 # Usage example:
 # Assuming 'df' is your DataFrame
 # expanded_df = expand_df(df)
